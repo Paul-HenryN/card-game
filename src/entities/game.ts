@@ -86,13 +86,17 @@ export class WebSocketPlayer implements Player {
   }
 
   async chooseAttackTarget(opponentCards: Card[]): Promise<number> {
-    this.ws.send(
-      JSON.stringify({ type: "chooseAttackTarget", data: opponentCards })
-    );
+    this.notify({ type: "chooseAttackTarget", opponentCards });
 
     return new Promise<number>((resolve, reject) => {
       this.ws.on("message", (msg) => {
-        resolve(Number(msg));
+        const input = JSON.parse(msg.toString()) as Message;
+
+        if (input.type == "attack") {
+          resolve(input.cardIndex);
+        } else {
+          reject("Invalid message");
+        }
       });
 
       this.ws.on("error", (err) => {
@@ -196,7 +200,7 @@ export class Game {
     return new Deck(shuffledCards.slice(0, 5));
   }
 
-  handlePlay(index: number) {
+  async handlePlay(index: number) {
     const [currentPlayer, opponent] = this.isP1Turn
       ? [this.p1, this.p2]
       : [this.p2, this.p1];
@@ -234,9 +238,22 @@ export class Game {
             break;
           }
 
-          const attackedCardIdx = currentPlayer.chooseAttackTarget(
+          console.log("Which card do you want to attack ?");
+
+          const attackedCardIdx = await currentPlayer.chooseAttackTarget(
             opponent.onBoard
           );
+
+          const attackedCard = opponent.onBoard[attackedCardIdx];
+
+          console.log("Attacked card index: " + attackedCardIdx);
+          console.log("Attacked card: " + opponent.onBoard[attackedCardIdx]);
+
+          if (attackedCard.power <= card.effect.power) {
+            opponent.onBoard.splice(attackedCardIdx, 1);
+          } else {
+            attackedCard.power -= card.effect.power;
+          }
 
           break;
         case "heal":
@@ -256,6 +273,16 @@ export class Game {
         default:
           break;
       }
+
+      currentPlayer.notify({
+        type: "boardUpdate",
+        board: { player: currentPlayer.onBoard, opponent: opponent.onBoard },
+      });
+
+      opponent.notify({
+        type: "boardUpdate",
+        board: { player: opponent.onBoard, opponent: currentPlayer.onBoard },
+      });
     }
 
     this.isP1Turn = !this.isP1Turn;

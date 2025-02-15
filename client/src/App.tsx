@@ -19,6 +19,7 @@ function App() {
   const [opponentDeck, setOpponentDeck] = useState<Card[] | null>();
   const [board, setBoard] = useState<Board>({ player: [], opponent: [] });
   const [isPlayerTurn, setPlayerTurn] = useState(false);
+  const [attackMode, setAttackMode] = useState(false);
 
   const handleMessage = useCallback(
     (e: MessageEvent) => {
@@ -47,7 +48,9 @@ function App() {
               opponentDeck?.filter((_, i) => i != msg.playedCardIdx)
             );
           }
-
+          break;
+        case "chooseAttackTarget":
+          setAttackMode(true);
           break;
         default:
           break;
@@ -55,6 +58,10 @@ function App() {
     },
     [ws, deck, opponentDeck, setDeck, setOpponentDeck, setBoard, setPlayerTurn]
   );
+
+  const handleAttack = (index: number) => {
+    sendMessage({ type: "attack", cardIndex: index });
+  };
 
   const sendMessage = (msg: Message) => {
     if (!ws || ws.readyState != WebSocket.OPEN) return;
@@ -102,7 +109,11 @@ function App() {
             active={false}
             handlePlay={() => {}}
           />
-          <BoardDisplay board={board} />
+          <BoardDisplay
+            board={board}
+            onAttack={handleAttack}
+            attackMode={attackMode}
+          />
 
           <DeckDisplay
             deck={deck || []}
@@ -133,12 +144,27 @@ function CardDisplay({ card }: { card: Card }) {
   );
 }
 
-function BoardDisplay({ board }: { board: Board }) {
+function BoardDisplay({
+  board,
+  attackMode,
+  onAttack,
+}: {
+  board: Board;
+  attackMode: boolean;
+  onAttack: (index: number) => void;
+}) {
   return (
     <div className="flex flex-col gap-5 min-h-[500px] my-5">
       <div className="flex gap-3">
         {board.opponent.map((card, i) => (
-          <CardDisplay key={i} card={card} />
+          <button
+            disabled={!attackMode}
+            onClick={() => {
+              if (attackMode) onAttack(i);
+            }}
+          >
+            <CardDisplay key={i} card={card} />
+          </button>
         ))}
       </div>
 

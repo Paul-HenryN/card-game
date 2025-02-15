@@ -9,8 +9,8 @@ async function main() {
   game.init();
 
   while (game.p1.deck.length() && game.p2.deck.length()) {
-    game.handlePlay(await game.p1.play());
-    game.handlePlay(await game.p2.play());
+    await game.handlePlay(await game.p1.play());
+    await game.handlePlay(await game.p2.play());
   }
 }
 

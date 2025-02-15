@@ -7,4 +7,9 @@ export type Message =
   | { type: "pick"; index: number }
   | { type: "deckUpdate"; deck: Card[] }
   | { type: "boardUpdate"; board: { player: Card[]; opponent: Card[] } }
-  | { type: "opponentPlay"; playedCardIdx: number; playedCard: Card };
+  | { type: "opponentPlay"; playedCardIdx: number; playedCard: Card }
+  | {
+      type: "chooseAttackTarget";
+      opponentCards: Card[];
+    }
+  | { type: "attack"; cardIndex: number };
