@@ -16,12 +16,25 @@ class OpponentCard extends Card {
 }
 
 function App() {
+  const [playerId, setPlayerId] = useState<string | null>(null);
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [deck, setDeck] = useState<Card[] | null>(null);
   const [opponentDeck, setOpponentDeck] = useState<Card[] | null>();
   const [board, setBoard] = useState<Board>({ player: [], opponent: [] });
   const [isPlayerTurn, setPlayerTurn] = useState(false);
   const [playMode, setPlayMode] = useState<PlayMode>("normal");
+
+  useEffect(() => {
+    const playerId = localStorage.getItem("playerId");
+
+    if (!playerId) {
+      const newPlayerId = window.crypto.randomUUID();
+      localStorage.setItem("playerId", newPlayerId);
+      setPlayerId(newPlayerId);
+    } else {
+      setPlayerId(playerId);
+    }
+  }, []);
 
   const handleMessage = useCallback(
     (e: MessageEvent) => {
@@ -67,6 +80,14 @@ function App() {
             alert("You lost :( !");
           }
           break;
+        case "reconnect":
+          setDeck(msg.deck);
+          setOpponentDeck(
+            Array(msg.opponentCardCount).fill(new OpponentCard())
+          );
+          setBoard(msg.board);
+          setPlayerTurn(msg.isPlayerTurn);
+          break;
         default:
           break;
       }
@@ -109,12 +130,12 @@ function App() {
       ws.close();
     }
 
-    const newSocket = new WebSocket("ws://localhost:8080");
+    const newSocket = new WebSocket("ws://localhost:8080?playerId=" + playerId);
     setWs(newSocket);
   };
 
   useEffect(() => {
-    if (ws?.OPEN) {
+    if (ws) {
       ws.onmessage = handleMessage;
     }
   }, [handleMessage]);

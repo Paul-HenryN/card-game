@@ -22,4 +22,11 @@ export type Message =
   | { type: "attack"; cardIndex: number }
   | { type: "heal"; cardIndex: number }
   | { type: "destroy"; cardIndex: number }
-  | { type: "gameOver"; win: boolean };
+  | { type: "gameOver"; win: boolean }
+  | {
+      type: "reconnect";
+      deck: Card[];
+      opponentCardCount: number;
+      board: { player: Card[]; opponent: Card[] };
+      isPlayerTurn: boolean;
+    };

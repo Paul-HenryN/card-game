@@ -15,7 +15,7 @@ const CARDS: Record<string, Card> = {
   ASSASSIN: new Card("Assassin", 5, new Effect("destroy", Infinity)),
 } as const;
 
-interface Player {
+export interface Player {
   deck: Deck;
   onBoard: Card[];
   play(): Promise<number>;
@@ -29,7 +29,8 @@ interface Player {
 export class WebSocketPlayer implements Player {
   public deck: Deck;
   public onBoard: Card[] = [];
-  public ws: WebSocket;
+
+  constructor(public ws: WebSocket) {}
 
   async connect(wss: WebSocketServer) {
     console.log("Waiting for connection...");
@@ -38,6 +39,11 @@ export class WebSocketPlayer implements Player {
       wss.on("connection", (ws) => {
         console.log("New player connected !");
         this.ws = ws;
+
+        this.ws.onclose = () => {
+          console.log("Player disconnected !");
+        };
+
         resolve();
       });
 
@@ -192,7 +198,8 @@ export class CPU implements Player {
 }
 
 export class Game {
-  private isP1Turn = true;
+  public isP1Turn = true;
+  public isOver = false;
 
   constructor(public p1: Player, public p2: Player) {}
 
