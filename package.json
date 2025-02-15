@@ -3,16 +3,20 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "type": "module",
   "scripts": {
-    "compile": "npx tsc main.ts --outDir dist",
-    "dev": "pnpm compile && node dist/main.js",
+    "compile": "pnpx esbuild src/main.ts --bundle --outfile=dist/bundle.js --platform=node --format=cjs",
+    "dev": "pnpm compile && node dist/bundle.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "typescript": "^5.7.3"
+    "@types/node": "^22.13.1",
+    "@types/ws": "^8.5.14",
+    "esbuild": "^0.25.0",
+    "prompt-sync": "^4.2.0",
+    "typescript": "^5.7.3",
+    "ws": "^8.18.0"
   }
 }
