@@ -24,13 +24,14 @@ export interface Player {
   chooseAttackTarget(opponentCards: Card[]): Promise<number>;
   chooseHealTarget(): Promise<number>;
   chooseDestroyTarget(opponentCards: Card[]): Promise<number>;
+  close(): void;
 }
 
 export class WebSocketPlayer implements Player {
   public deck: Deck;
   public onBoard: Card[] = [];
 
-  constructor(public ws: WebSocket) {}
+  constructor(public id: string, public ws: WebSocket) {}
 
   async connect(wss: WebSocketServer) {
     console.log("Waiting for connection...");
@@ -150,6 +151,12 @@ export class WebSocketPlayer implements Player {
       });
     });
   }
+
+  close() {
+    if (this.ws && this.ws.readyState == WebSocket.OPEN) {
+      this.ws.close();
+    }
+  }
 }
 
 export class CPU implements Player {
@@ -195,6 +202,8 @@ export class CPU implements Player {
       }, Math.random() * 3000);
     });
   }
+
+  close() {}
 }
 
 export class Game {
@@ -310,5 +319,12 @@ export class Game {
     }
 
     this.isP1Turn = !this.isP1Turn;
+  }
+
+  close() {
+    this.p1.close();
+    this.p2.close();
+
+    this.isOver = true;
   }
 }
