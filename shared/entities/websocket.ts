@@ -12,4 +12,14 @@ export type Message =
       type: "chooseAttackTarget";
       opponentCards: Card[];
     }
-  | { type: "attack"; cardIndex: number };
+  | {
+      type: "chooseHealTarget";
+    }
+  | {
+      type: "chooseDestroyTarget";
+      opponentCards: Card[];
+    }
+  | { type: "attack"; cardIndex: number }
+  | { type: "heal"; cardIndex: number }
+  | { type: "destroy"; cardIndex: number }
+  | { type: "gameOver"; win: boolean };

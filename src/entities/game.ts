@@ -106,13 +106,17 @@ export class WebSocketPlayer implements Player {
   }
 
   chooseHealTarget(): Promise<number> {
-    this.ws.send(
-      JSON.stringify({ type: "chooseHealTarget", data: this.onBoard })
-    );
+    this.notify({ type: "chooseHealTarget" });
 
     return new Promise<number>((resolve, reject) => {
       this.ws.on("message", (msg) => {
-        resolve(Number(msg));
+        const input = JSON.parse(msg.toString()) as Message;
+
+        if (input.type === "heal") {
+          resolve(input.cardIndex);
+        } else {
+          reject("Invalid message");
+        }
       });
 
       this.ws.on("error", (err) => {
@@ -122,13 +126,17 @@ export class WebSocketPlayer implements Player {
   }
 
   chooseDestroyTarget(opponentCards: Card[]): Promise<number> {
-    this.ws.send(
-      JSON.stringify({ type: "chooseDestroyTarget", data: opponentCards })
-    );
+    this.notify({ type: "chooseDestroyTarget", opponentCards });
 
     return new Promise<number>((resolve, reject) => {
       this.ws.on("message", (msg) => {
-        resolve(Number(msg));
+        const input = JSON.parse(msg.toString()) as Message;
+
+        if (input.type === "destroy") {
+          resolve(input.cardIndex);
+        } else {
+          reject("Invalid message");
+        }
       });
 
       this.ws.on("error", (err) => {
@@ -162,7 +170,7 @@ export class CPU implements Player {
     return new Promise<number>((resolve) => {
       setTimeout(() => {
         resolve(Math.floor(Math.random() * opponentCards.length));
-      }, Math.random() * 1000);
+      }, Math.random() * 3000);
     });
   }
 
@@ -170,7 +178,7 @@ export class CPU implements Player {
     return new Promise<number>((resolve) => {
       setTimeout(() => {
         resolve(Math.floor(Math.random() * this.onBoard.length));
-      }, Math.random() * 1000);
+      }, Math.random() * 3000);
     });
   }
 
@@ -178,7 +186,7 @@ export class CPU implements Player {
     return new Promise<number>((resolve) => {
       setTimeout(() => {
         resolve(Math.floor(Math.random() * opponentCards.length));
-      }, Math.random() * 1000);
+      }, Math.random() * 3000);
     });
   }
 }
@@ -238,16 +246,11 @@ export class Game {
             break;
           }
 
-          console.log("Which card do you want to attack ?");
-
           const attackedCardIdx = await currentPlayer.chooseAttackTarget(
             opponent.onBoard
           );
 
           const attackedCard = opponent.onBoard[attackedCardIdx];
-
-          console.log("Attacked card index: " + attackedCardIdx);
-          console.log("Attacked card: " + opponent.onBoard[attackedCardIdx]);
 
           if (attackedCard.power <= card.effect.power) {
             opponent.onBoard.splice(attackedCardIdx, 1);
@@ -257,18 +260,32 @@ export class Game {
 
           break;
         case "heal":
-          if (currentPlayer.onBoard.length == 0) {
+          if (currentPlayer.onBoard.length <= 1) {
             break;
           }
 
-          const healedCard = currentPlayer.chooseHealTarget();
+          console.log("Which card to heal ?");
+
+          const healedCardIdx = await currentPlayer.chooseHealTarget();
+
+          console.log("Healed card: " + currentPlayer.onBoard[healedCardIdx]);
+
+          currentPlayer.onBoard[healedCardIdx].power += card.effect.power;
           break;
         case "destroy":
-          if (opponent.onBoard.length == 0) {
+          if (opponent.onBoard.length === 0) {
             break;
           }
 
-          const destroyedCard = opponent.chooseDestroyTarget(opponent.onBoard);
+          console.log("Which card to destroy ?");
+
+          const destroyedCardIdx = await currentPlayer.chooseDestroyTarget(
+            opponent.onBoard
+          );
+
+          console.log("Destroyed card: " + opponent.onBoard[destroyedCardIdx]);
+
+          opponent.onBoard.splice(destroyedCardIdx, 1);
           break;
         default:
           break;

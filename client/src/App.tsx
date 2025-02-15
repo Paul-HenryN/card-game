@@ -7,6 +7,8 @@ type Board = {
   opponent: Card[];
 };
 
+type PlayMode = "normal" | "attack" | "heal" | "destroy";
+
 class OpponentCard extends Card {
   constructor() {
     super("?", -1);
@@ -19,7 +21,7 @@ function App() {
   const [opponentDeck, setOpponentDeck] = useState<Card[] | null>();
   const [board, setBoard] = useState<Board>({ player: [], opponent: [] });
   const [isPlayerTurn, setPlayerTurn] = useState(false);
-  const [attackMode, setAttackMode] = useState(false);
+  const [playMode, setPlayMode] = useState<PlayMode>("normal");
 
   const handleMessage = useCallback(
     (e: MessageEvent) => {
@@ -50,7 +52,20 @@ function App() {
           }
           break;
         case "chooseAttackTarget":
-          setAttackMode(true);
+          setPlayMode("attack");
+          break;
+        case "chooseHealTarget":
+          setPlayMode("heal");
+          break;
+        case "chooseDestroyTarget":
+          setPlayMode("destroy");
+          break;
+        case "gameOver":
+          if (msg.win) {
+            alert("You won >:D !");
+          } else {
+            alert("You lost :( !");
+          }
           break;
         default:
           break;
@@ -59,19 +74,30 @@ function App() {
     [ws, deck, opponentDeck, setDeck, setOpponentDeck, setBoard, setPlayerTurn]
   );
 
-  const handleAttack = (index: number) => {
-    sendMessage({ type: "attack", cardIndex: index });
-  };
-
   const sendMessage = (msg: Message) => {
     if (!ws || ws.readyState != WebSocket.OPEN) return;
     ws.send(JSON.stringify(msg));
+  };
+
+  const handleAttack = (index: number) => {
+    sendMessage({ type: "attack", cardIndex: index });
+    setPlayMode("normal");
   };
 
   const handlePlay = (index: number) => {
     if (!isPlayerTurn) return;
     sendMessage({ type: "pick", index });
     setPlayerTurn(false);
+  };
+
+  const handleHeal = (index: number) => {
+    sendMessage({ type: "heal", cardIndex: index });
+    setPlayMode("normal");
+  };
+
+  const handleDestroy = (index: number) => {
+    sendMessage({ type: "destroy", cardIndex: index });
+    setPlayMode("normal");
   };
 
   useEffect(() => {
@@ -112,7 +138,9 @@ function App() {
           <BoardDisplay
             board={board}
             onAttack={handleAttack}
-            attackMode={attackMode}
+            onHeal={handleHeal}
+            onDestroy={handleDestroy}
+            playMode={playMode}
           />
 
           <DeckDisplay
@@ -146,21 +174,26 @@ function CardDisplay({ card }: { card: Card }) {
 
 function BoardDisplay({
   board,
-  attackMode,
+  playMode,
   onAttack,
+  onHeal,
+  onDestroy,
 }: {
   board: Board;
-  attackMode: boolean;
+  playMode: PlayMode;
   onAttack: (index: number) => void;
+  onHeal: (index: number) => void;
+  onDestroy: (index: number) => void;
 }) {
   return (
     <div className="flex flex-col gap-5 min-h-[500px] my-5">
       <div className="flex gap-3">
         {board.opponent.map((card, i) => (
           <button
-            disabled={!attackMode}
+            disabled={!["attack", "destroy"].includes(playMode)}
             onClick={() => {
-              if (attackMode) onAttack(i);
+              if (playMode === "attack") onAttack(i);
+              else if (playMode === "destroy") onDestroy(i);
             }}
           >
             <CardDisplay key={i} card={card} />
@@ -170,7 +203,9 @@ function BoardDisplay({
 
       <div className="flex gap-3">
         {board.player.map((card, i) => (
-          <CardDisplay key={i} card={card} />
+          <button disabled={playMode != "heal"} onClick={() => onHeal(i)}>
+            <CardDisplay key={i} card={card} />
+          </button>
         ))}
       </div>
     </div>
