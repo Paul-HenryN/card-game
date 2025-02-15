@@ -211,6 +211,12 @@ export class Game {
       deck: currentPlayer.deck.cards,
     });
 
+    opponent.notify({
+      type: "opponentPlay",
+      playedCardIdx: index,
+      playedCard: card,
+    });
+
     currentPlayer.notify({
       type: "boardUpdate",
       board: { player: currentPlayer.onBoard, opponent: opponent.onBoard },
