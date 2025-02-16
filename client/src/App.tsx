@@ -44,7 +44,6 @@ function App() {
 
       switch (msg.type) {
         case "init":
-          console.log("Init received !");
           setOpponentDeck(Array(5).fill(new OpponentCard()));
           setDeck(msg.deck);
           break;
@@ -81,6 +80,7 @@ function App() {
           }
           break;
         case "reconnect":
+          console.log(msg);
           setDeck(msg.deck);
           setOpponentDeck(
             Array(msg.opponentCardCount).fill(new OpponentCard())
@@ -125,12 +125,14 @@ function App() {
     console.log(opponentDeck);
   }, [opponentDeck]);
 
-  const connect = () => {
+  const connect = (multiPlayer: boolean = false) => {
     if (ws) {
       ws.close();
     }
 
-    const newSocket = new WebSocket("ws://localhost:8080?playerId=" + playerId);
+    const newSocket = new WebSocket(
+      `ws://localhost:8080?playerId=${playerId}&multiPlayer=${multiPlayer}`
+    );
     setWs(newSocket);
   };
 
@@ -143,12 +145,21 @@ function App() {
   return (
     <div className="min-h-screen grid place-items-center bg-amber-100 py-10">
       {!ws ? (
-        <button
-          onClick={connect}
-          className="bg-blue-500 text-white px-5 py-2 rounded-lg"
-        >
-          Start game
-        </button>
+        <>
+          <button
+            onClick={() => connect()}
+            className="bg-blue-500 text-white px-5 py-2 rounded-lg"
+          >
+            Solo
+          </button>
+
+          <button
+            onClick={() => connect(true)}
+            className="bg-blue-500 text-white px-5 py-2 rounded-lg"
+          >
+            Multiplayer
+          </button>
+        </>
       ) : (
         <div>
           <DeckDisplay

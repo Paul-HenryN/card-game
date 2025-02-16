@@ -2,7 +2,7 @@ import { wss } from "./server";
 import { CPU, Game, WebSocketPlayer } from "./entities/game.js";
 
 async function main() {
-  let games: Map<[string, string], Game> = new Map();
+  let games: Map<string[], Game> = new Map();
   let lobby: WebSocketPlayer[] = [];
 
   const findGameByPlayerId = (playerId: string) => {
@@ -19,23 +19,39 @@ async function main() {
     console.log("New connection !");
     const url = new URL(`http://${process.env.HOST ?? "localhost"}${req.url}`);
     const playerId = url.searchParams.get("playerId");
+    const multiPlayer = url.searchParams.get("multiPlayer") === "true";
 
     let game = findGameByPlayerId(playerId);
 
     if (game && !game.isOver) {
-      (game.p1 as WebSocketPlayer).ws = ws;
+      const [disconnectedPlayer, opponent] =
+        (game.p1 as WebSocketPlayer).id === playerId
+          ? [game.p1 as WebSocketPlayer, game.p2]
+          : [game.p2 as WebSocketPlayer, game.p1];
 
-      game.p1.notify({
+      disconnectedPlayer.ws = ws;
+
+      disconnectedPlayer.notify({
         type: "reconnect",
-        deck: game.p1.deck.cards,
-        opponentCardCount: game.p2.deck.length(),
-        board: { player: game.p1.onBoard, opponent: game.p2.onBoard },
-        isPlayerTurn: game.isP1Turn,
+        deck: disconnectedPlayer.deck.cards,
+        opponentCardCount: opponent.deck.length(),
+        board: {
+          player: disconnectedPlayer.onBoard,
+          opponent: opponent.onBoard,
+        },
+        isPlayerTurn:
+          disconnectedPlayer.id === (game.p1 as WebSocketPlayer).id
+            ? game.isP1Turn
+            : !game.isP1Turn,
       });
     } else {
       const player = new WebSocketPlayer(playerId, ws);
 
-      if (lobby.length > 0) {
+      if (!multiPlayer) {
+        game = new Game(player, new CPU());
+        games.set([player.id], game);
+        game.init();
+      } else if (lobby.length > 0) {
         const opponent = lobby.splice(0, 1)[0];
 
         game = new Game(player, opponent);
@@ -51,8 +67,6 @@ async function main() {
       await game.handlePlay(await game.p1.play());
       await game.handlePlay(await game.p2.play());
     }
-
-    game.isOver = true;
 
     const p1Score = game.p1.onBoard.reduce((acc, card) => acc + card.power, 0);
     const p2Score = game.p2.onBoard.reduce((acc, card) => acc + card.power, 0);
