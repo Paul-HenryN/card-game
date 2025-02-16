@@ -1,5 +1,16 @@
 @import "tailwindcss";
 
+:root{
+    --card-width: 110px;
+    --card-aspect-ratio: 4 / 3;
+    --card-height: calc(var(--card-width) * var(--card-aspect-ratio));
+    --deck-gap: 0px;
+    --deck-width: calc(var(--card-width) * 5 + var(--deck-gap) * 4);
+
+    --board-gap: 10px;
+    --board-height: calc(var(--card-height) * 2 + var(--board-gap));
+}
+
 button:not([disabled]) {
     @apply cursor-pointer;
 }

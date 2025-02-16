@@ -1,15 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { Message } from "../../shared/entities/websocket";
 import { Card } from "../../shared/entities/game";
+import { GameContainer } from "./components/game-container";
+import { DeckDisplay } from "./components/deck-display";
+import { BoardDisplay } from "./components/board-display";
 
-type Board = {
+export type Board = {
   player: Card[];
   opponent: Card[];
 };
 
-type PlayMode = "normal" | "attack" | "heal" | "destroy";
+export type PlayMode = "normal" | "attack" | "heal" | "destroy";
 
-class OpponentCard extends Card {
+export class OpponentCard extends Card {
   constructor() {
     super("?", -1);
   }
@@ -143,7 +146,7 @@ function App() {
   }, [handleMessage]);
 
   return (
-    <div className="min-h-screen grid place-items-center bg-amber-100 py-10">
+    <GameContainer>
       {!ws ? (
         <>
           <button
@@ -162,18 +165,21 @@ function App() {
         </>
       ) : (
         <div>
-          <DeckDisplay
-            deck={opponentDeck || []}
-            active={false}
-            handlePlay={() => {}}
-          />
-          <BoardDisplay
-            board={board}
-            onAttack={handleAttack}
-            onHeal={handleHeal}
-            onDestroy={handleDestroy}
-            playMode={playMode}
-          />
+          <div className="transform-[perspective(50cm)_rotateX(45deg)]">
+            <DeckDisplay
+              deck={opponentDeck || []}
+              active={false}
+              handlePlay={() => {}}
+            />
+
+            <BoardDisplay
+              board={board}
+              onAttack={handleAttack}
+              onHeal={handleHeal}
+              onDestroy={handleDestroy}
+              playMode={playMode}
+            />
+          </div>
 
           <DeckDisplay
             deck={deck || []}
@@ -182,91 +188,7 @@ function App() {
           />
         </div>
       )}
-    </div>
-  );
-}
-
-function CardDisplay({ card }: { card: Card }) {
-  return (
-    <div className="border border-neutral-500 p-3 min-w-[200px] max-w-[220px] h-[250px] grid place-items-center rounded-sm">
-      {card.name}
-
-      {card.power != -1 && <div>power: {card.power} pts</div>}
-
-      {card.effect && (
-        <div>
-          <div>
-            effect: {card.effect.type}, {card.effect.power} pts
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function BoardDisplay({
-  board,
-  playMode,
-  onAttack,
-  onHeal,
-  onDestroy,
-}: {
-  board: Board;
-  playMode: PlayMode;
-  onAttack: (index: number) => void;
-  onHeal: (index: number) => void;
-  onDestroy: (index: number) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-5 min-h-[500px] my-5">
-      <div className="flex gap-3">
-        {board.opponent.map((card, i) => (
-          <button
-            disabled={!["attack", "destroy"].includes(playMode)}
-            onClick={() => {
-              if (playMode === "attack") onAttack(i);
-              else if (playMode === "destroy") onDestroy(i);
-            }}
-          >
-            <CardDisplay key={i} card={card} />
-          </button>
-        ))}
-      </div>
-
-      <div className="flex gap-3">
-        {board.player.map((card, i) => (
-          <button disabled={playMode != "heal"} onClick={() => onHeal(i)}>
-            <CardDisplay key={i} card={card} />
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function DeckDisplay({
-  deck,
-  active,
-  handlePlay,
-}: {
-  deck: Card[];
-  active: boolean;
-  handlePlay: (index: number) => void;
-}) {
-  return (
-    <div className="flex gap-3 min-h-[250px]">
-      {deck?.map((card, i) => (
-        <button
-          key={i}
-          disabled={!active}
-          data-disabled={!active}
-          onClick={() => handlePlay(i)}
-          className="data-[disabled=false]:hover:translate-y-[-10px] transition-transform"
-        >
-          <CardDisplay card={card} />
-        </button>
-      ))}
-    </div>
+    </GameContainer>
   );
 }
 
