@@ -9,8 +9,54 @@
 
     --board-gap: 10px;
     --board-height: calc(var(--card-height) * 2 + var(--board-gap));
+
+    --anim-card-pick: card-pick 1.3s ease-in-out forwards;
+    --anim-player-card-appear: player-card-appear 500ms ease-in-out forwards;
+    --anim-opponent-card-appear: opponent-card-appear 500ms ease-in-out forwards;
 }
 
 button:not([disabled]) {
     @apply cursor-pointer;
+}
+
+@keyframes card-pick {
+    from {
+        transform: translateY(0) perspective(40cm) rotateX(0deg) scale(1);
+        opacity: 1;
+    }
+
+    60% {
+        opacity: 0.8;
+        transform: translateY(-80%) perspective(40cm) rotateX(0deg) scale(1.1);
+    }
+
+    to {
+        rotate: 0deg;
+        transform: translateY(-140%) perspective(40cm) rotateX(45deg) scale(1);
+        opacity: 0;
+    }
+}
+
+@keyframes player-card-appear {
+    from {
+        transform: translateY(50%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes opponent-card-appear {
+    from {
+        transform: translateY(-50%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }

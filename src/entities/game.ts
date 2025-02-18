@@ -183,7 +183,7 @@ export class CPU implements Player {
     return new Promise<number>((resolve) => {
       setTimeout(() => {
         resolve(Math.floor(Math.random() * opponentCards.length));
-      }, Math.random() * 3000);
+      }, Math.random() * 3000 + 1000);
     });
   }
 
@@ -191,7 +191,7 @@ export class CPU implements Player {
     return new Promise<number>((resolve) => {
       setTimeout(() => {
         resolve(Math.floor(Math.random() * this.onBoard.length));
-      }, Math.random() * 3000);
+      }, Math.random() * 3000 + 1000);
     });
   }
 
@@ -199,7 +199,7 @@ export class CPU implements Player {
     return new Promise<number>((resolve) => {
       setTimeout(() => {
         resolve(Math.floor(Math.random() * opponentCards.length));
-      }, Math.random() * 3000);
+      }, Math.random() * 3000 + 1000);
     });
   }
 
