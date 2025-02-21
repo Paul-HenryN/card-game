@@ -1,26 +1,39 @@
 import { Card } from "./card";
 import { useGameContext } from "../game-context";
 import { LayoutGroup } from "motion/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Message } from "../../../shared/entities/websocket";
 
-const defaultCardVisibility = Array(5).fill(true);
-
 export function PlayerDeck() {
-  const { ws, playerDeck, setPlayerDeck, board, setBoard, sendMessage } =
-    useGameContext();
-  const [inDeck, setInDeck] = useState(defaultCardVisibility);
+  const {
+    ws,
+    playerDeck,
+    setPlayerDeck,
+    board,
+    setBoard,
+    sendMessage,
+    isPlayerTurn,
+    setPlayerTurn,
+  } = useGameContext();
+  const [playedCardIdx, setPlayedCardIdx] = useState<number | null>(null);
 
-  const handleDeckUpdateMessage = (event: MessageEvent) => {
-    const message = JSON.parse(event.data) as Message;
+  // Handles server deck update events
+  // Syncs the client player deck if the server deck is different
+  const handleDeckUpdateMessage = useCallback(
+    (event: MessageEvent) => {
+      const message = JSON.parse(event.data) as Message;
 
-    if (message.type === "deckUpdate") {
-      setTimeout(() => setPlayerDeck(message.deck), 500);
-    }
-  };
+      if (message.type === "deckUpdate") {
+        if (JSON.stringify(playerDeck) !== JSON.stringify(message.deck)) {
+          setPlayerDeck(message.deck);
+        }
+      }
+    },
+    [playerDeck, setPlayerDeck]
+  );
 
   useEffect(() => {
-    setInDeck(Array(playerDeck.length).fill(true));
+    setPlayedCardIdx(null);
   }, [playerDeck]);
 
   useEffect(() => {
@@ -29,27 +42,33 @@ export function PlayerDeck() {
     return () => {
       ws?.removeEventListener("message", handleDeckUpdateMessage);
     };
-  }, [ws]);
+  }, [ws, handleDeckUpdateMessage]);
 
   return (
     <LayoutGroup>
-      <div className="flex justify-center">
+      <div className="flex justify-center gap-(--deck-gap)">
         {playerDeck.map((card, i) => (
           <Card
             key={i}
-            id={`player-card-${i}`}
+            animate={playedCardIdx === i ? "play" : undefined}
             card={card}
             onClick={() => {
-              setInDeck((prev) => prev.map((_, j) => j !== i));
+              setPlayedCardIdx(i);
+              setPlayerTurn(false);
             }}
-            onPlay={() => {
-              setBoard({
-                ...board,
-                player: [...board.player, card],
-              });
-              sendMessage({ type: "pick", index: i });
+            // Optimistically update player deck and board
+            // Then send the "pick" message to the server to play the card
+            onAnimationComplete={(def) => {
+              if (def === "play") {
+                sendMessage({ type: "pick", index: i });
+                setPlayerDeck(playerDeck.filter((_, j) => j !== i));
+                setBoard({
+                  ...board,
+                  player: [...board.player, card],
+                });
+              }
             }}
-            visible={inDeck[i]}
+            disabled={!isPlayerTurn}
           />
         ))}
       </div>

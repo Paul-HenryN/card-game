@@ -4,7 +4,7 @@ import { OpponentDeck } from "./opponent-deck";
 
 export function Game() {
   return (
-    <div className="relative">
+    <div className="relative h-[calc(4_*_var(--card-height))]">
       <div className="transform-[perspective(40cm)_rotateX(45deg)]">
         <OpponentDeck />
         <Board />

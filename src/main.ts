@@ -64,8 +64,8 @@ async function main() {
     }
 
     while (game.p1.deck.length() && game.p2.deck.length()) {
-      await game.handlePlay(await game.p1.play());
-      await game.handlePlay(await game.p2.play());
+      if (game.isP1Turn) await game.handlePlay(await game.p1.play());
+      else await game.handlePlay(await game.p2.play());
     }
 
     const p1Score = game.p1.onBoard.reduce((acc, card) => acc + card.power, 0);

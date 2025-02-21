@@ -2,6 +2,7 @@ import { useCallback, useEffect } from "react";
 import { useGameContext } from "../game-context";
 import { Card } from "./card";
 import { Message } from "../../../shared/entities/websocket";
+import { LayoutGroup } from "motion/react";
 
 export function Board() {
   const { ws, board, setBoard, playMode, sendMessage } = useGameContext();
@@ -20,7 +21,12 @@ export function Board() {
       const message = JSON.parse(event.data) as Message;
 
       if (message.type === "boardUpdate") {
-        setBoard(message.board);
+        if (JSON.stringify(board) !== JSON.stringify(message.board)) {
+          console.log("Board updated from server !");
+          console.log(message.board);
+          console.log(board);
+          setBoard(message.board);
+        }
       }
     },
     [board, setBoard]
@@ -35,27 +41,33 @@ export function Board() {
   return (
     <div className="flex flex-col items-center gap-(--board-gap) h-(--board-height) my-5">
       <div className="flex h-(--card-height) gap-(--board-gap)">
-        {board.opponent.map((card, i) => (
-          <button
-            disabled={!["attack", "destroy"].includes(playMode)}
-            onClick={() => handleClick(i)}
-            className="animate-(--anim-opponent-card-appear)"
-          >
-            <Card id={`opponent-board-card-${i}`} key={i} card={card} />
-          </button>
-        ))}
+        <LayoutGroup>
+          {board.opponent.map((card, i) => (
+            <Card
+              key={i}
+              initial="fadeDown"
+              animate="initial"
+              card={card}
+              disabled={!["attack", "destroy"].includes(playMode)}
+              onClick={() => handleClick(i)}
+            />
+          ))}
+        </LayoutGroup>
       </div>
 
       <div className="flex gap-(--board-gap) h-(--card-height)">
-        {board.player.map((card, i) => (
-          <button
-            disabled={playMode != "heal"}
-            onClick={() => handleClick(i)}
-            className="animate-(--anim-player-card-appear)"
-          >
-            <Card id={`player-board-card-${i}`} key={i} card={card} />
-          </button>
-        ))}
+        <LayoutGroup>
+          {board.player.map((card, i) => (
+            <Card
+              key={i}
+              initial="fadeUp"
+              animate="initial"
+              card={card}
+              disabled={playMode != "heal"}
+              onClick={() => handleClick(i)}
+            />
+          ))}
+        </LayoutGroup>
       </div>
     </div>
   );

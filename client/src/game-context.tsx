@@ -29,7 +29,7 @@ type GameContextType = {
   playerDeck: Card[];
   setPlayerDeck: Dispatch<SetStateAction<Card[] | null>>;
   opponentDeck: Card[];
-  setOpponentDeck: (deck: Card[]) => void;
+  setOpponentDeck: Dispatch<SetStateAction<Card[] | null>>;
   board: Board;
   setBoard: Dispatch<SetStateAction<Board>>;
   isPlayerTurn: boolean;
@@ -65,7 +65,7 @@ export function GameContextProvider({
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [playerDeck, setPlayerDeck] = useState<Card[] | null>(null);
-  const [opponentDeck, setOpponentDeck] = useState<Card[] | null>();
+  const [opponentDeck, setOpponentDeck] = useState<Card[] | null>(null);
   const [board, setBoard] = useState<Board>({ player: [], opponent: [] });
   const [isPlayerTurn, setPlayerTurn] = useState(false);
   const [playMode, setPlayMode] = useState<PlayMode>("normal");
