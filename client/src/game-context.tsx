@@ -1,5 +1,7 @@
 import {
   createContext,
+  Dispatch,
+  SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -25,9 +27,11 @@ type GameContextType = {
   ws: WebSocket | null;
   startGame: (multi?: boolean) => void;
   playerDeck: Card[];
+  setPlayerDeck: Dispatch<SetStateAction<Card[] | null>>;
   opponentDeck: Card[];
   setOpponentDeck: (deck: Card[]) => void;
   board: Board;
+  setBoard: Dispatch<SetStateAction<Board>>;
   isPlayerTurn: boolean;
   setPlayerTurn: (isPlayerTurn: boolean) => void;
   playMode: PlayMode;
@@ -40,9 +44,11 @@ const GameContext = createContext<GameContextType>({
   ws: null,
   startGame: () => {},
   playerDeck: [],
+  setPlayerDeck: () => {},
   opponentDeck: [],
   setOpponentDeck: () => {},
   board: { player: [], opponent: [] },
+  setBoard: () => {},
   isPlayerTurn: false,
   setPlayerTurn: () => {},
   playMode: "normal",
@@ -83,9 +89,6 @@ export function GameContextProvider({
       switch (msg.type) {
         case "init":
           setOpponentDeck(Array(5).fill(new OpponentCard()));
-          setPlayerDeck(msg.deck);
-          break;
-        case "deckUpdate":
           setPlayerDeck(msg.deck);
           break;
         case "play":
@@ -173,9 +176,11 @@ export function GameContextProvider({
         ws,
         startGame,
         playerDeck: playerDeck || [],
+        setPlayerDeck,
         opponentDeck: opponentDeck || [],
         setOpponentDeck,
         board,
+        setBoard,
         isPlayerTurn,
         setPlayerTurn,
         playMode,

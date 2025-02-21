@@ -1,4 +1,3 @@
-import { GameContainer } from "./components/game-container";
 import { Menu } from "./components/menu";
 import { useGameContext } from "./game-context";
 import { Game } from "./components/game";
@@ -6,7 +5,7 @@ import { Game } from "./components/game";
 function App() {
   const { ws } = useGameContext();
 
-  return <GameContainer>{!ws ? <Menu /> : <Game />}</GameContainer>;
+  return <>{ws ? <Game /> : <Menu />}</>;
 }
 
 export default App;

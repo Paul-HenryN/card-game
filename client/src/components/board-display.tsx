@@ -1,5 +1,5 @@
 import { useGameContext } from "../game-context";
-import { CardDisplay } from "./card-display";
+import { Card } from "./card";
 
 export function BoardDisplay() {
   const { board, playMode, sendMessage } = useGameContext();
@@ -22,7 +22,7 @@ export function BoardDisplay() {
             onClick={() => handleClick(i)}
             className="animate-(--anim-opponent-card-appear)"
           >
-            <CardDisplay key={i} card={card} />
+            <Card key={i} card={card} index={i} />
           </button>
         ))}
       </div>
@@ -34,7 +34,7 @@ export function BoardDisplay() {
             onClick={() => handleClick(i)}
             className="animate-(--anim-player-card-appear)"
           >
-            <CardDisplay key={i} card={card} />
+            <Card key={i} card={card} index={i} />
           </button>
         ))}
       </div>

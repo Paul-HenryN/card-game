@@ -1,16 +1,16 @@
 import { BoardDisplay } from "./board-display";
-import { OpponentDeckDisplay } from "./opponent-deck-display";
-import { PlayerDeckDisplay } from "./player-deck-display";
+import { PlayerDeck } from "./player-deck";
+import { OpponentDeck } from "./opponent-deck";
 
 export function Game() {
   return (
-    <div>
+    <div className="relative">
       <div className="transform-[perspective(40cm)_rotateX(45deg)]">
-        <OpponentDeckDisplay />
+        <OpponentDeck />
         <BoardDisplay />
       </div>
 
-      <PlayerDeckDisplay />
+      <PlayerDeck />
     </div>
   );
 }

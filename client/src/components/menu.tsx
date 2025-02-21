@@ -1,7 +1,7 @@
 import { useGameContext } from "../game-context";
 
 export function Menu() {
-  const { startGame, isConnected } = useGameContext();
+  const { startGame } = useGameContext();
 
   return (
     <div>
