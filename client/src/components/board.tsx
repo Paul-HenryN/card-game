@@ -5,7 +5,15 @@ import { Message } from "../../../shared/entities/websocket";
 import { LayoutGroup } from "motion/react";
 
 export function Board() {
-  const { ws, board, setBoard, playMode, sendMessage } = useGameContext();
+  const {
+    ws,
+    board,
+    setBoard,
+    playMode,
+    setPlayMode,
+    sendMessage,
+    isPlayerTurn,
+  } = useGameContext();
 
   const handleClick = (index: number) => {
     if (playMode === "attack")
@@ -14,6 +22,8 @@ export function Board() {
       sendMessage({ type: "heal", cardIndex: index });
     else if (playMode === "destroy")
       sendMessage({ type: "destroy", cardIndex: index });
+
+    setPlayMode("normal");
   };
 
   const handleBoardUpdateMessage = useCallback(
@@ -22,9 +32,6 @@ export function Board() {
 
       if (message.type === "boardUpdate") {
         if (JSON.stringify(board) !== JSON.stringify(message.board)) {
-          console.log("Board updated from server !");
-          console.log(message.board);
-          console.log(board);
           setBoard(message.board);
         }
       }
@@ -48,7 +55,9 @@ export function Board() {
               initial="fadeDown"
               animate="initial"
               card={card}
-              disabled={!["attack", "destroy"].includes(playMode)}
+              disabled={
+                !isPlayerTurn || !["attack", "destroy"].includes(playMode)
+              }
               onClick={() => handleClick(i)}
             />
           ))}
@@ -63,7 +72,7 @@ export function Board() {
               initial="fadeUp"
               animate="initial"
               card={card}
-              disabled={playMode != "heal"}
+              disabled={!isPlayerTurn || playMode != "heal"}
               onClick={() => handleClick(i)}
             />
           ))}

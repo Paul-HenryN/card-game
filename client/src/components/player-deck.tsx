@@ -14,6 +14,7 @@ export function PlayerDeck() {
     sendMessage,
     isPlayerTurn,
     setPlayerTurn,
+    playMode,
   } = useGameContext();
   const [playedCardIdx, setPlayedCardIdx] = useState<number | null>(null);
 
@@ -54,7 +55,10 @@ export function PlayerDeck() {
             card={card}
             onClick={() => {
               setPlayedCardIdx(i);
-              setPlayerTurn(false);
+
+              if (!card.effect) {
+                setPlayerTurn(false);
+              }
             }}
             // Optimistically update player deck and board
             // Then send the "pick" message to the server to play the card
@@ -68,7 +72,7 @@ export function PlayerDeck() {
                 });
               }
             }}
-            disabled={!isPlayerTurn}
+            disabled={!isPlayerTurn || playMode != "normal"}
           />
         ))}
       </div>
