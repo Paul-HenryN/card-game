@@ -1,8 +1,10 @@
+import { useCallback, useEffect } from "react";
 import { useGameContext } from "../game-context";
 import { Card } from "./card";
+import { Message } from "../../../shared/entities/websocket";
 
-export function BoardDisplay() {
-  const { board, playMode, sendMessage } = useGameContext();
+export function Board() {
+  const { ws, board, setBoard, playMode, sendMessage } = useGameContext();
 
   const handleClick = (index: number) => {
     if (playMode === "attack")
@@ -13,6 +15,23 @@ export function BoardDisplay() {
       sendMessage({ type: "destroy", cardIndex: index });
   };
 
+  const handleBoardUpdateMessage = useCallback(
+    (event: MessageEvent) => {
+      const message = JSON.parse(event.data) as Message;
+
+      if (message.type === "boardUpdate") {
+        setBoard(message.board);
+      }
+    },
+    [board, setBoard]
+  );
+
+  useEffect(() => {
+    ws?.addEventListener("message", handleBoardUpdateMessage);
+
+    return () => ws?.removeEventListener("message", handleBoardUpdateMessage);
+  }, [ws, handleBoardUpdateMessage]);
+
   return (
     <div className="flex flex-col items-center gap-(--board-gap) h-(--board-height) my-5">
       <div className="flex h-(--card-height) gap-(--board-gap)">
@@ -22,7 +41,7 @@ export function BoardDisplay() {
             onClick={() => handleClick(i)}
             className="animate-(--anim-opponent-card-appear)"
           >
-            <Card key={i} card={card} index={i} />
+            <Card id={`opponent-board-card-${i}`} key={i} card={card} />
           </button>
         ))}
       </div>
@@ -34,7 +53,7 @@ export function BoardDisplay() {
             onClick={() => handleClick(i)}
             className="animate-(--anim-player-card-appear)"
           >
-            <Card key={i} card={card} index={i} />
+            <Card id={`player-board-card-${i}`} key={i} card={card} />
           </button>
         ))}
       </div>

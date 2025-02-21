@@ -94,9 +94,6 @@ export function GameContextProvider({
         case "play":
           setPlayerTurn(true);
           break;
-        case "boardUpdate":
-          setBoard(msg.board);
-          break;
         case "chooseAttackTarget":
           setPlayMode("attack");
           break;

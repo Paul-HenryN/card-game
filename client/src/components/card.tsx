@@ -1,7 +1,7 @@
 import { Card as CardEntity } from "../../../shared/entities/game";
 import { AnimatePresence, motion, TargetAndTransition } from "motion/react";
 
-export type CardAnimation = "initial" | "playerMove" | "opponentMove";
+export type CardAnimation = "initial" | "move";
 
 export function Card({
   card,
@@ -9,12 +9,14 @@ export function Card({
   onClick,
   onPlay,
   visible = true,
+  ownedBy = "player",
 }: {
   card: CardEntity;
   id: string;
   onClick?: () => void;
   onPlay?: () => void;
   visible?: boolean;
+  ownedBy?: "player" | "opponent";
 }) {
   const cardVariants: Record<CardAnimation, TargetAndTransition> = {
     initial: {
@@ -22,13 +24,8 @@ export function Card({
       scale: 1,
       opacity: 1,
     },
-    playerMove: {
-      y: "-100%",
-      opacity: 0,
-    },
-    opponentMove: {
-      y: 200,
-      scale: 1.2,
+    move: {
+      y: ownedBy === "player" ? "-100%" : "100%",
       opacity: 0,
     },
   };
@@ -42,10 +39,10 @@ export function Card({
           variants={cardVariants}
           initial="initial"
           className="relative"
-          exit="playerMove"
+          exit="move"
           onClick={onClick}
           onAnimationComplete={(def) => {
-            if (def === "playerMove") onPlay?.();
+            if (def === "move") onPlay?.();
           }}
           transition={{
             layout: {

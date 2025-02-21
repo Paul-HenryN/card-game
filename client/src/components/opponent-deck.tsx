@@ -7,7 +7,8 @@ import { Message } from "../../../shared/entities/websocket";
 const defaultCardVisibility = Array(5).fill(true);
 
 export function OpponentDeck() {
-  const { ws, opponentDeck, setOpponentDeck } = useGameContext();
+  const { ws, opponentDeck, setOpponentDeck, board, setBoard } =
+    useGameContext();
   const [inDeck, setInDeck] = useState(defaultCardVisibility);
 
   useEffect(() => {
@@ -22,23 +23,21 @@ export function OpponentDeck() {
       if (message.type === "opponentPlay") {
         setInDeck((prev) => prev.map((_, j) => j !== message.playedCardIdx));
 
-        console.log(
-          "Opponent played ",
-          message.playedCard,
-          " at index",
-          message.playedCardIdx
-        );
+        // Optimistically update opponent deck and board
+        // This is done with a short delay to allow the play animation to finish
+        setTimeout(() => {
+          setOpponentDeck(
+            opponentDeck.filter((_, j) => j !== message.playedCardIdx)
+          );
 
-        setTimeout(
-          () =>
-            setOpponentDeck(
-              opponentDeck.filter((_, j) => j !== message.playedCardIdx)
-            ),
-          500
-        );
+          setBoard({
+            ...board,
+            opponent: [...board.opponent, message.playedCard],
+          });
+        }, 500);
       }
     },
-    [opponentDeck]
+    [opponentDeck, setOpponentDeck, board, setBoard]
   );
 
   useEffect(() => {
@@ -58,6 +57,7 @@ export function OpponentDeck() {
             id={`opponent-card-${i}`}
             card={card}
             visible={inDeck[i]}
+            ownedBy="opponent"
           />
         ))}
       </div>
