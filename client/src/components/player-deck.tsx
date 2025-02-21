@@ -46,36 +46,51 @@ export function PlayerDeck() {
   }, [ws, handleDeckUpdateMessage]);
 
   return (
-    <LayoutGroup>
-      <div className="flex justify-center gap-(--deck-gap)">
-        {playerDeck.map((card, i) => (
-          <Card
-            key={i}
-            animate={playedCardIdx === i ? "play" : undefined}
-            card={card}
-            onClick={() => {
-              setPlayedCardIdx(i);
+    <>
+      <LayoutGroup>
+        <div className="flex justify-center gap-(--deck-gap)">
+          {playerDeck.map((card, i) => (
+            <Card
+              key={i}
+              animate={playedCardIdx === i ? "play" : undefined}
+              card={card}
+              onClick={() => {
+                setPlayedCardIdx(i);
 
-              if (!card.effect) {
-                setPlayerTurn(false);
-              }
-            }}
-            // Optimistically update player deck and board
-            // Then send the "pick" message to the server to play the card
-            onAnimationComplete={(def) => {
-              if (def === "play") {
-                sendMessage({ type: "pick", index: i });
-                setPlayerDeck(playerDeck.filter((_, j) => j !== i));
-                setBoard({
-                  ...board,
-                  player: [...board.player, card],
-                });
-              }
-            }}
-            disabled={!isPlayerTurn || playMode != "normal"}
-          />
-        ))}
-      </div>
-    </LayoutGroup>
+                if (!card.effect && playerDeck.length > 1) {
+                  setPlayerTurn(false);
+                }
+              }}
+              // Optimistically update player deck and board
+              // Then send the "pick" message to the server to play the card
+              onAnimationComplete={(def) => {
+                if (def === "play") {
+                  sendMessage({ type: "pick", index: i });
+                  setPlayerDeck(playerDeck.filter((_, j) => j !== i));
+                  setBoard({
+                    ...board,
+                    player: [...board.player, card],
+                  });
+                }
+              }}
+              disabled={!isPlayerTurn || playMode != "normal"}
+              className="data-[disabled='true']:cursor-not-allowed data-[disabled='false']:hover:-translate-y-2 transition-transform"
+            />
+          ))}
+        </div>
+      </LayoutGroup>
+
+      {isPlayerTurn && playMode == "normal" && (
+        <button
+          className="fixed right-10 bottom-10 bg-blue-500 text-white px-5 py-2 rounded-lg"
+          onClick={() => {
+            sendMessage({ type: "skip" });
+            setPlayerTurn(false);
+          }}
+        >
+          Skip turn
+        </button>
+      )}
+    </>
   );
 }

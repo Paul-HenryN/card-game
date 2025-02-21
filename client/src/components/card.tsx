@@ -69,6 +69,7 @@ export function Card({
     <motion.button
       layout
       disabled={disabled}
+      data-disabled={disabled}
       variants={cardVariants}
       initial={initial}
       animate={animate}

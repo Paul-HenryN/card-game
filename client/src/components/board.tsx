@@ -13,6 +13,7 @@ export function Board() {
     setPlayMode,
     sendMessage,
     isPlayerTurn,
+    setPlayerTurn,
   } = useGameContext();
 
   const handleClick = (index: number) => {
@@ -24,6 +25,7 @@ export function Board() {
       sendMessage({ type: "destroy", cardIndex: index });
 
     setPlayMode("normal");
+    setPlayerTurn(false);
   };
 
   const handleBoardUpdateMessage = useCallback(

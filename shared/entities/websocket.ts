@@ -22,6 +22,7 @@ export type Message =
   | { type: "attack"; cardIndex: number }
   | { type: "heal"; cardIndex: number }
   | { type: "destroy"; cardIndex: number }
+  | { type: "skip" }
   | { type: "gameOver"; win: boolean }
   | {
       type: "reconnect";

@@ -81,6 +81,8 @@ export class WebSocketPlayer implements Player {
 
         if (input.type == "pick") {
           resolve(input.index);
+        } else if (input.type == "skip") {
+          resolve(-1);
         } else {
           reject();
         }
@@ -225,6 +227,12 @@ export class Game {
   }
 
   async handlePlay(index: number) {
+    // Player skipped turn
+    if (index === -1) {
+      this.isP1Turn = !this.isP1Turn;
+      return;
+    }
+
     const [currentPlayer, opponent] = this.isP1Turn
       ? [this.p1, this.p2]
       : [this.p2, this.p1];
