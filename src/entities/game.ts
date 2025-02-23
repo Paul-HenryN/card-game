@@ -1,25 +1,12 @@
 import { WebSocketServer, WebSocket } from "ws";
-import { Deck, Card, Effect } from "../../shared/entities/game";
+import { Deck, Card, CardType, Effect } from "../../shared/entities/game";
 import { Message } from "../../shared/entities/websocket";
-
-const CARDS: Record<string, Card> = {
-  WARRIOR: new Card("Warrior", 3),
-  MAGE: new Card("Mage", 4, new Effect("heal", 3)),
-  ROGUE: new Card("Rogue", 5),
-  HUNTER: new Card("Hunter", 6, new Effect("attack", 1)),
-  DRUID: new Card("Druid", 7),
-  SHAMAN: new Card("Shaman", 3, new Effect("heal", 2)),
-  PALADIN: new Card("Paladin", 9),
-  PRIEST: new Card("Priest", 10),
-  ARCHER: new Card("Archer", 2, new Effect("attack", 2)),
-  ASSASSIN: new Card("Assassin", 5, new Effect("destroy", Infinity)),
-} as const;
 
 export interface Player {
   deck: Deck;
   onBoard: Card[];
   play(): Promise<number>;
-  init(): void;
+  init({ playsFirst }: { playsFirst: boolean }): Promise<void>;
   notify(message: Message): Promise<void>;
   chooseAttackTarget(opponentCards: Card[]): Promise<number>;
   chooseHealTarget(): Promise<number>;
@@ -54,11 +41,14 @@ export class WebSocketPlayer implements Player {
     });
   }
 
-  init() {
-    this.notify({
+  async init({ playsFirst }: { playsFirst: boolean }) {
+    await this.notify({
       type: "init",
       deck: this.deck.cards,
+      playsFirst,
     });
+
+    console.log("Init message sent !");
   }
 
   async notify(message: Message) {
@@ -165,7 +155,9 @@ export class CPU implements Player {
   public deck: Deck;
   public onBoard: Card[] = [];
 
-  init() {}
+  init() {
+    return Promise.resolve();
+  }
 
   public play() {
     return new Promise<number>((resolve) => {
@@ -209,20 +201,25 @@ export class CPU implements Player {
 }
 
 export class Game {
+  public cards: Card[] = [];
   public isP1Turn = true;
   public isOver = false;
 
   constructor(public p1: Player, public p2: Player) {}
 
-  init() {
+  async init() {
+    this.cards = this.loadCards();
     this.p1.deck = this.generateDeck();
     this.p2.deck = this.generateDeck();
-    this.p1.init();
-    this.p2.init();
+
+    await Promise.all([
+      this.p1.init({ playsFirst: this.isP1Turn }),
+      this.p2.init({ playsFirst: !this.isP1Turn }),
+    ]);
   }
 
   generateDeck(): Deck {
-    const shuffledCards = Object.values(CARDS).sort(() => 0.5 - Math.random());
+    const shuffledCards = this.cards.sort(() => 0.5 - Math.random());
     return new Deck(shuffledCards.slice(0, 5));
   }
 
@@ -263,70 +260,84 @@ export class Game {
       board: { player: opponent.onBoard, opponent: currentPlayer.onBoard },
     });
 
-    if (card.effect) {
-      switch (card.effect.type) {
-        case "attack":
-          if (opponent.onBoard.length == 0) {
-            break;
-          }
+    // if (card.effect) {
+    //   switch (card.effect.type) {
+    //     case "attack":
+    //       if (opponent.onBoard.length == 0) {
+    //         break;
+    //       }
 
-          const attackedCardIdx = await currentPlayer.chooseAttackTarget(
-            opponent.onBoard
-          );
+    //       const attackedCardIdx = await currentPlayer.chooseAttackTarget(
+    //         opponent.onBoard
+    //       );
 
-          const attackedCard = opponent.onBoard[attackedCardIdx];
+    //       const attackedCard = opponent.onBoard[attackedCardIdx];
 
-          if (attackedCard.power <= card.effect.power) {
-            opponent.onBoard.splice(attackedCardIdx, 1);
-          } else {
-            attackedCard.power -= card.effect.power;
-          }
+    //       if (attackedCard.power <= card.effect.power) {
+    //         opponent.onBoard.splice(attackedCardIdx, 1);
+    //       } else {
+    //         attackedCard.power -= card.effect.power;
+    //       }
 
-          break;
-        case "heal":
-          if (currentPlayer.onBoard.length <= 1) {
-            break;
-          }
+    //       break;
+    //     case "heal":
+    //       if (currentPlayer.onBoard.length <= 1) {
+    //         break;
+    //       }
 
-          console.log("Which card to heal ?");
+    //       console.log("Which card to heal ?");
 
-          const healedCardIdx = await currentPlayer.chooseHealTarget();
+    //       const healedCardIdx = await currentPlayer.chooseHealTarget();
 
-          console.log("Healed card: " + currentPlayer.onBoard[healedCardIdx]);
+    //       console.log("Healed card: " + currentPlayer.onBoard[healedCardIdx]);
 
-          currentPlayer.onBoard[healedCardIdx].power += card.effect.power;
-          break;
-        case "destroy":
-          if (opponent.onBoard.length === 0) {
-            break;
-          }
+    //       currentPlayer.onBoard[healedCardIdx].power += card.effect.power;
+    //       break;
+    //     case "destroy":
+    //       if (opponent.onBoard.length === 0) {
+    //         break;
+    //       }
 
-          console.log("Which card to destroy ?");
+    //       console.log("Which card to destroy ?");
 
-          const destroyedCardIdx = await currentPlayer.chooseDestroyTarget(
-            opponent.onBoard
-          );
+    //       const destroyedCardIdx = await currentPlayer.chooseDestroyTarget(
+    //         opponent.onBoard
+    //       );
 
-          console.log("Destroyed card: " + opponent.onBoard[destroyedCardIdx]);
+    //       console.log("Destroyed card: " + opponent.onBoard[destroyedCardIdx]);
 
-          opponent.onBoard.splice(destroyedCardIdx, 1);
-          break;
-        default:
-          break;
-      }
+    //       opponent.onBoard.splice(destroyedCardIdx, 1);
+    //       break;
+    //     default:
+    //       break;
+    //   }
 
-      currentPlayer.notify({
-        type: "boardUpdate",
-        board: { player: currentPlayer.onBoard, opponent: opponent.onBoard },
-      });
+    //   currentPlayer.notify({
+    //     type: "boardUpdate",
+    //     board: { player: currentPlayer.onBoard, opponent: opponent.onBoard },
+    //   });
 
-      opponent.notify({
-        type: "boardUpdate",
-        board: { player: opponent.onBoard, opponent: currentPlayer.onBoard },
-      });
-    }
+    //   opponent.notify({
+    //     type: "boardUpdate",
+    //     board: { player: opponent.onBoard, opponent: currentPlayer.onBoard },
+    //   });
+    // }
 
     this.isP1Turn = !this.isP1Turn;
+  }
+
+  loadCards() {
+    const cards = require("../../assets/cards.json");
+
+    return cards.map(
+      (c: Record<string, unknown>) =>
+        new Card(
+          c.name as string,
+          c.type as CardType,
+          c.power as number,
+          c.effect as Effect
+        )
+    );
   }
 
   close() {

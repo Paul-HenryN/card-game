@@ -18,6 +18,15 @@ export function PlayerDeck() {
   } = useGameContext();
   const [playedCardIdx, setPlayedCardIdx] = useState<number | null>(null);
 
+  const handleInitMessage = (event: MessageEvent) => {
+    const message = JSON.parse(event.data) as Message;
+
+    if (message.type === "init") {
+      setPlayerDeck(message.deck);
+      setPlayerTurn(message.playsFirst);
+    }
+  };
+
   // Handles server deck update events
   // Syncs the client player deck if the server deck is different
   const handleDeckUpdateMessage = useCallback(
@@ -34,13 +43,11 @@ export function PlayerDeck() {
   );
 
   useEffect(() => {
-    setPlayedCardIdx(null);
-  }, [playerDeck]);
-
-  useEffect(() => {
+    ws?.addEventListener("message", handleInitMessage);
     ws?.addEventListener("message", handleDeckUpdateMessage);
 
     return () => {
+      ws?.removeEventListener("message", handleInitMessage);
       ws?.removeEventListener("message", handleDeckUpdateMessage);
     };
   }, [ws, handleDeckUpdateMessage]);
@@ -52,29 +59,24 @@ export function PlayerDeck() {
           {playerDeck.map((card, i) => (
             <Card
               key={i}
-              animate={playedCardIdx === i ? "play" : undefined}
+              isHidden={false}
+              initial="initial"
+              animate={playedCardIdx === i ? "play" : "initial"}
               card={card}
+              disabled={!isPlayerTurn || playMode != "normal"}
               onClick={() => {
                 setPlayedCardIdx(i);
-
-                if (!card.effect && playerDeck.length > 1) {
-                  setPlayerTurn(false);
-                }
+                setPlayerTurn(false);
               }}
-              // Optimistically update player deck and board
-              // Then send the "pick" message to the server to play the card
               onAnimationComplete={(def) => {
                 if (def === "play") {
-                  sendMessage({ type: "pick", index: i });
                   setPlayerDeck(playerDeck.filter((_, j) => j !== i));
-                  setBoard({
-                    ...board,
-                    player: [...board.player, card],
-                  });
+                  setBoard({ ...board, player: [...board.player, card] });
+                  sendMessage({ type: "pick", index: i });
+                  setPlayedCardIdx(null);
                 }
               }}
-              disabled={!isPlayerTurn || playMode != "normal"}
-              className="data-[disabled='true']:cursor-not-allowed data-[disabled='false']:hover:-translate-y-2 transition-transform"
+              className="data-[disabled]:cursor-not-allowed"
             />
           ))}
         </div>

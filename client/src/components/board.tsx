@@ -61,6 +61,7 @@ export function Board() {
                 !isPlayerTurn || !["attack", "destroy"].includes(playMode)
               }
               onClick={() => handleClick(i)}
+              isHidden={false}
             />
           ))}
         </LayoutGroup>
@@ -76,6 +77,7 @@ export function Board() {
               card={card}
               disabled={!isPlayerTurn || playMode != "heal"}
               onClick={() => handleClick(i)}
+              isHidden={false}
             />
           ))}
         </LayoutGroup>

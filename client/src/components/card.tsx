@@ -9,23 +9,19 @@ export type CardAnimation =
   | "play"
   | "opponentMove";
 
-export function Card({
-  card,
-  onClick,
-  onAnimationComplete,
-  disabled = false,
-  className,
-  initial = "initial",
-  animate = "initial",
-}: {
-  card: CardEntity;
+type CardProps = (
+  | { isHidden: false; card: CardEntity }
+  | { isHidden: true }
+) & {
   onClick?: () => void;
   onAnimationComplete?: MotionProps["onAnimationComplete"];
   disabled?: boolean;
   className?: string;
   initial?: CardAnimation;
   animate?: CardAnimation;
-}) {
+};
+
+export function Card(props: CardProps) {
   const cardVariants: Record<CardAnimation, TargetAndTransition> = {
     initial: {
       y: 0,
@@ -68,14 +64,14 @@ export function Card({
   return (
     <motion.button
       layout
-      disabled={disabled}
-      data-disabled={disabled}
+      disabled={props.disabled}
+      data-disabled={props.disabled}
       variants={cardVariants}
-      initial={initial}
-      animate={animate}
-      className={cn("relative", className)}
-      onClick={onClick}
-      onAnimationComplete={onAnimationComplete}
+      initial={props.initial}
+      animate={props.animate}
+      className={cn("relative", props.className)}
+      onClick={props.onClick}
+      onAnimationComplete={props.onAnimationComplete}
       transition={{
         layout: {
           type: "spring",
@@ -85,19 +81,28 @@ export function Card({
       }}
     >
       <div className="border border-neutral-500 p-3 w-(--card-width) h-(--card-height) grid place-items-center rounded-sm">
-        {card.name}
-      </div>
-
-      <div className="absolute text-start">
-        {card.power != -1 && <div>power: {card.power} pts</div>}
-        {card.effect && (
-          <div>
-            <div>
-              effect: {card.effect.type}, {card.effect.power} pts
-            </div>
-          </div>
+        {props.isHidden ? (
+          "?"
+        ) : (
+          <>
+            <p>{props.card.name}</p>
+            <p>{props.card.type}</p>
+          </>
         )}
       </div>
+
+      {!props.isHidden && (
+        <div className="absolute text-start">
+          {props.card.power != -1 && <div>power: {props.card.power} pts</div>}
+          {props.card.effect && (
+            <div>
+              <div>
+                effect: {props.card.effect.type}, {props.card.effect.power} pts
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </motion.button>
   );
 }

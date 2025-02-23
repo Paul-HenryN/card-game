@@ -5,19 +5,24 @@ import { useEffect } from "react";
 import { Message } from "../../../shared/entities/websocket";
 
 export function OpponentDeck() {
-  const { ws, opponentDeck, setOpponentDeck, setBoard } = useGameContext();
+  const {
+    ws,
+    opponentDeckLength,
+    setOpponentDeckLength,
+    setBoard,
+    setPlayerTurn,
+  } = useGameContext();
 
   const handleOpponentPlayMessage = (event: MessageEvent) => {
     const message = JSON.parse(event.data) as Message;
 
     if (message.type === "opponentPlay") {
-      setOpponentDeck((prev) =>
-        prev ? prev.filter((_, j) => j !== message.playedCardIdx) : null
-      );
+      setOpponentDeckLength(opponentDeckLength - 1);
       setBoard((prev) => ({
         ...prev,
         opponent: [...prev.opponent, message.playedCard],
       }));
+      setPlayerTurn(true);
     }
   };
 
@@ -29,9 +34,11 @@ export function OpponentDeck() {
   return (
     <LayoutGroup>
       <div className="flex justify-center gap-(--deck-gap)">
-        {opponentDeck.map((card, i) => (
-          <Card key={i} card={card} disabled />
-        ))}
+        {Array(opponentDeckLength)
+          .fill(null)
+          .map((_, i) => (
+            <Card key={i} disabled isHidden />
+          ))}
       </div>
     </LayoutGroup>
   );

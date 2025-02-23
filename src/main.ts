@@ -50,13 +50,13 @@ async function main() {
       if (!multiPlayer) {
         game = new Game(player, new CPU());
         games.set([player.id], game);
-        game.init();
+        await game.init();
       } else if (lobby.length > 0) {
         const opponent = lobby.splice(0, 1)[0];
 
         game = new Game(player, opponent);
         games.set([player.id, opponent.id], game);
-        game.init();
+        await game.init();
       } else {
         lobby.push(player);
         return;

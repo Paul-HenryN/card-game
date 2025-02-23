@@ -1,7 +1,7 @@
 import { Card } from "./game";
 
 export type Message =
-  | { type: "init"; deck: Card[] }
+  | { type: "init"; deck: Card[]; playsFirst: boolean }
   | { type: "info"; message: string }
   | { type: "play" }
   | { type: "pick"; index: number }

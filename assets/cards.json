@@ -1,0 +1,180 @@
+[
+    {
+      "name": "Dawn Knight",
+      "type": "Unit",
+      "power": 6,
+      "effect": {
+        "type": "heal",
+        "power": 2,
+        "condition": "on_turn_start"
+      }
+    },
+    {
+      "name": "Elite Swordsman",
+      "type": "Unit",
+      "power": 8
+    },
+    {
+      "name": "Battle Ogre",
+      "type": "Unit",
+      "power": 9
+    },
+    {
+      "name": "Goblin Raider",
+      "type": "Unit",
+      "power": 2,
+      "effect": {
+        "type": "boost",
+        "power": 2,
+        "condition": "when_goblin_card_played"
+      }
+    },
+    {
+      "name": "Mana Well",
+      "type": "Building",
+      "power": 4,
+      "effect": {
+        "type": "draw",
+        "power": 1,
+        "condition": "on_turn_start"
+      }
+    },
+    {
+      "name": "Flame Strike",
+      "type": "Spell",
+      "effect": {
+        "type": "damage",
+        "power": 4,
+        "condition": "target_enemy_unit"
+      }
+    },
+    {
+      "name": "Arcane Barrier",
+      "type": "Spell",
+      "effect": {
+        "type": "shield",
+        "power": 3,
+        "condition": "target_friendly_unit"
+      }
+    },
+    {
+      "name": "Shadow Assassin",
+      "type": "Unit",
+      "power": 5,
+      "effect": {
+        "type": "damage",
+        "power": 3,
+        "condition": "on_play"
+      }
+    },
+    {
+      "name": "Frost Titan",
+      "type": "Unit",
+      "power": 7,
+      "effect": {
+        "type": "freeze",
+        "power": 1,
+        "condition": "on_attack"
+      }
+    },
+    {
+      "name": "Healing Fountain",
+      "type": "Building",
+      "power": 3,
+      "effect": {
+        "type": "heal",
+        "power": 2,
+        "condition": "on_turn_end"
+      }
+    },
+    {
+      "name": "Thunderbolt",
+      "type": "Spell",
+      "effect": {
+        "type": "damage",
+        "power": 5,
+        "condition": "random_enemy_unit"
+      }
+    },
+    {
+      "name": "Royal Guard",
+      "type": "Unit",
+      "power": 6,
+      "effect": {
+        "type": "taunt"
+      }
+    },
+    {
+      "name": "Berserker",
+      "type": "Unit",
+      "power": 4,
+      "effect": {
+        "type": "boost",
+        "power": 2,
+        "condition": "when_damaged"
+      }
+    },
+    {
+      "name": "Stone Wall",
+      "type": "Building",
+      "power": 10
+    },
+    {
+      "name": "Elven Ranger",
+      "type": "Unit",
+      "power": 3,
+      "effect": {
+        "type": "damage",
+        "power": 2,
+        "condition": "on_play"
+      }
+    },
+    {
+      "name": "Meteor Shower",
+      "type": "Spell",
+      "effect": {
+        "type": "damage",
+        "power": 3,
+        "condition": "all_enemy_units"
+      }
+    },
+    {
+      "name": "Vampire Lord",
+      "type": "Unit",
+      "power": 7,
+      "effect": {
+        "type": "lifesteal",
+        "power": 3,
+        "condition": "on_attack"
+      }
+    },
+    {
+      "name": "Reinforcements",
+      "type": "Spell",
+      "effect": {
+        "type": "summon",
+        "power": 1,
+        "condition": "random_friendly_unit"
+      }
+    },
+    {
+      "name": "Necromancer",
+      "type": "Unit",
+      "power": 5,
+      "effect": {
+        "type": "revive",
+        "power": 1,
+        "condition": "on_friendly_death"
+      }
+    },
+    {
+      "name": "Warlord",
+      "type": "Unit",
+      "power": 8,
+      "effect": {
+        "type": "boost",
+        "power": 2,
+        "condition": "all_friendly_units_on_play"
+      }
+    }
+]

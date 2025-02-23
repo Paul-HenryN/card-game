@@ -17,19 +17,13 @@ export type Board = {
 
 export type PlayMode = "normal" | "attack" | "heal" | "destroy";
 
-export class OpponentCard extends Card {
-  constructor() {
-    super("?", -1);
-  }
-}
-
 type GameContextType = {
   ws: WebSocket | null;
   startGame: (multi?: boolean) => void;
   playerDeck: Card[];
   setPlayerDeck: Dispatch<SetStateAction<Card[] | null>>;
-  opponentDeck: Card[];
-  setOpponentDeck: Dispatch<SetStateAction<Card[] | null>>;
+  opponentDeckLength: number;
+  setOpponentDeckLength: Dispatch<SetStateAction<number>>;
   board: Board;
   setBoard: Dispatch<SetStateAction<Board>>;
   isPlayerTurn: boolean;
@@ -45,8 +39,8 @@ const GameContext = createContext<GameContextType>({
   startGame: () => {},
   playerDeck: [],
   setPlayerDeck: () => {},
-  opponentDeck: [],
-  setOpponentDeck: () => {},
+  opponentDeckLength: 0,
+  setOpponentDeckLength: () => {},
   board: { player: [], opponent: [] },
   setBoard: () => {},
   isPlayerTurn: false,
@@ -65,7 +59,7 @@ export function GameContextProvider({
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [playerId, setPlayerId] = useState<string | null>(null);
   const [playerDeck, setPlayerDeck] = useState<Card[] | null>(null);
-  const [opponentDeck, setOpponentDeck] = useState<Card[] | null>(null);
+  const [opponentDeckLength, setOpponentDeckLength] = useState<number>(5);
   const [board, setBoard] = useState<Board>({ player: [], opponent: [] });
   const [isPlayerTurn, setPlayerTurn] = useState(false);
   const [playMode, setPlayMode] = useState<PlayMode>("normal");
@@ -77,53 +71,8 @@ export function GameContextProvider({
       );
 
       setWs(ws);
-      setOpponentDeck(Array(5).fill(new OpponentCard()));
     },
     [playerId]
-  );
-
-  const handleMessage = useCallback(
-    (e: MessageEvent) => {
-      const msg = JSON.parse(e.data) as Message;
-
-      switch (msg.type) {
-        case "init":
-          setOpponentDeck(Array(5).fill(new OpponentCard()));
-          setPlayerDeck(msg.deck);
-          break;
-        case "play":
-          setPlayerTurn(true);
-          break;
-        case "chooseAttackTarget":
-          setPlayMode("attack");
-          break;
-        case "chooseHealTarget":
-          setPlayMode("heal");
-          break;
-        case "chooseDestroyTarget":
-          setPlayMode("destroy");
-          break;
-        case "gameOver":
-          if (msg.win) {
-            alert("You won >:D !");
-          } else {
-            alert("You lost :( !");
-          }
-          break;
-        case "reconnect":
-          console.log(msg);
-          setPlayerDeck(msg.deck);
-          setOpponentDeck(
-            Array(msg.opponentCardCount).fill(new OpponentCard())
-          );
-          setBoard(msg.board);
-          setPlayerTurn(msg.isPlayerTurn);
-          break;
-        default:
-          break;
-      }
-    },
-    [opponentDeck, setPlayerDeck, setOpponentDeck, setBoard, setPlayerTurn]
   );
 
   const sendMessage = useCallback(
@@ -161,12 +110,6 @@ export function GameContextProvider({
     }
   }, [setPlayerId]);
 
-  useEffect(() => {
-    if (ws) {
-      ws.onmessage = handleMessage;
-    }
-  }, [handleMessage]);
-
   return (
     <GameContext.Provider
       value={{
@@ -174,8 +117,8 @@ export function GameContextProvider({
         startGame,
         playerDeck: playerDeck || [],
         setPlayerDeck,
-        opponentDeck: opponentDeck || [],
-        setOpponentDeck,
+        opponentDeckLength,
+        setOpponentDeckLength,
         board,
         setBoard,
         isPlayerTurn,
