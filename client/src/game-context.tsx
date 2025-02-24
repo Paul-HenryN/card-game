@@ -7,8 +7,8 @@ import {
   useEffect,
   useState,
 } from "react";
-import { Message } from "../../shared/entities/websocket";
-import { Card } from "../../shared/entities/game";
+import { Message } from "@card-game/types";
+import { Card } from "@card-game/types";
 
 export type Board = {
   player: Card[];

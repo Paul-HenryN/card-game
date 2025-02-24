@@ -1,6 +1,5 @@
 import { WebSocketServer, WebSocket } from "ws";
-import { Deck, Card, CardType, Effect } from "../../shared/entities/game";
-import { Message } from "../../shared/entities/websocket";
+import { Deck, Card, CardType, Effect, Message } from "@card-game/types";
 
 export interface Player {
   deck: Deck;
@@ -336,7 +335,7 @@ export class Game {
   }
 
   loadCards() {
-    const cards = require("../../assets/cards.json");
+    const cards = require("../assets/cards.json");
 
     return cards.map(
       (c: Record<string, unknown>) =>

@@ -1,4 +1,4 @@
-import { Card as CardEntity } from "../../../shared/entities/game";
+import { Card as CardEntity } from "@card-game/types";
 import { motion, MotionProps, TargetAndTransition } from "motion/react";
 import { cn } from "../utils";
 

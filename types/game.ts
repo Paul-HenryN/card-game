@@ -7,7 +7,7 @@ type EffectType =
   | "summon"
   | "revive"
   | "lifesteal"
-  | "taut"
+  | "taunt"
   | "draw";
 
 type EffectCondition = {

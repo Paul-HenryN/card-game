@@ -2,7 +2,7 @@ import { Board } from "./board";
 import { PlayerHand } from "./player-hand";
 import { OpponentHand } from "./opponent-hand";
 import { useGameContext } from "../game-context";
-import { Message } from "../../../shared/entities/websocket";
+import { Message } from "@card-game/types";
 import { useEffect } from "react";
 import { Deck } from "./deck";
 

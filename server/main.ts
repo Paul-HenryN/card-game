@@ -1,5 +1,5 @@
 import { wss } from "./server";
-import { CPU, Game, WebSocketPlayer } from "./entities/game.js";
+import { CPU, Game, WebSocketPlayer } from "./entities/game";
 
 async function main() {
   let games: Map<string[], Game> = new Map();

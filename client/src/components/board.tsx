@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from "react";
 import { useGameContext } from "../game-context";
 import { Card } from "./card";
-import { Message } from "../../../shared/entities/websocket";
+import { Message } from "@card-game/types";
 import { LayoutGroup } from "motion/react";
 
 export function Board() {

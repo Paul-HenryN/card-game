@@ -2,7 +2,7 @@ import { Card } from "./card";
 import { useGameContext } from "../game-context";
 import { LayoutGroup } from "motion/react";
 import { useEffect } from "react";
-import { Message } from "../../../shared/entities/websocket";
+import { Message } from "@card-game/types";
 
 export function OpponentHand() {
   const {
