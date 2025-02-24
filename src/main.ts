@@ -33,8 +33,9 @@ async function main() {
 
       disconnectedPlayer.notify({
         type: "reconnect",
-        deck: disconnectedPlayer.deck.cards,
-        opponentCardCount: opponent.deck.length(),
+        hand: disconnectedPlayer.hand,
+        deckLength: opponent.deck.length(),
+        opponentHandLength: opponent.hand.length,
         board: {
           player: disconnectedPlayer.onBoard,
           opponent: opponent.onBoard,

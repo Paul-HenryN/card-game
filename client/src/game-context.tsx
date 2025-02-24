@@ -20,8 +20,12 @@ export type PlayMode = "normal" | "attack" | "heal" | "destroy";
 type GameContextType = {
   ws: WebSocket | null;
   startGame: (multi?: boolean) => void;
-  playerDeck: Card[];
-  setPlayerDeck: Dispatch<SetStateAction<Card[] | null>>;
+  playerHand: Card[];
+  setPlayerHand: Dispatch<SetStateAction<Card[] | null>>;
+  playerDeckLength: number;
+  setPlayerDeckLength: Dispatch<SetStateAction<number>>;
+  opponentHandLength: number;
+  setOpponentHandLength: Dispatch<SetStateAction<number>>;
   opponentDeckLength: number;
   setOpponentDeckLength: Dispatch<SetStateAction<number>>;
   board: Board;
@@ -37,8 +41,12 @@ type GameContextType = {
 const GameContext = createContext<GameContextType>({
   ws: null,
   startGame: () => {},
-  playerDeck: [],
-  setPlayerDeck: () => {},
+  playerHand: [],
+  setPlayerHand: () => {},
+  playerDeckLength: 0,
+  setPlayerDeckLength: () => {},
+  opponentHandLength: 0,
+  setOpponentHandLength: () => {},
   opponentDeckLength: 0,
   setOpponentDeckLength: () => {},
   board: { player: [], opponent: [] },
@@ -58,8 +66,10 @@ export function GameContextProvider({
 }) {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [playerId, setPlayerId] = useState<string | null>(null);
-  const [playerDeck, setPlayerDeck] = useState<Card[] | null>(null);
-  const [opponentDeckLength, setOpponentDeckLength] = useState<number>(5);
+  const [playerHand, setPlayerHand] = useState<Card[] | null>(null);
+  const [opponentHandLength, setOpponentHandLength] = useState<number>(5);
+  const [playerDeckLength, setPlayerDeckLength] = useState<number>(10);
+  const [opponentDeckLength, setOpponentDeckLength] = useState<number>(10);
   const [board, setBoard] = useState<Board>({ player: [], opponent: [] });
   const [isPlayerTurn, setPlayerTurn] = useState(false);
   const [playMode, setPlayMode] = useState<PlayMode>("normal");
@@ -115,10 +125,14 @@ export function GameContextProvider({
       value={{
         ws,
         startGame,
-        playerDeck: playerDeck || [],
-        setPlayerDeck,
+        playerHand: playerHand || [],
+        setPlayerHand,
+        playerDeckLength,
+        setPlayerDeckLength,
         opponentDeckLength,
         setOpponentDeckLength,
+        opponentHandLength,
+        setOpponentHandLength,
         board,
         setBoard,
         isPlayerTurn,

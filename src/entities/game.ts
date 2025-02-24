@@ -4,6 +4,7 @@ import { Message } from "../../shared/entities/websocket";
 
 export interface Player {
   deck: Deck;
+  hand: Card[];
   onBoard: Card[];
   play(): Promise<number>;
   init({ playsFirst }: { playsFirst: boolean }): Promise<void>;
@@ -17,6 +18,7 @@ export interface Player {
 export class WebSocketPlayer implements Player {
   public deck: Deck;
   public onBoard: Card[] = [];
+  public hand: Card[] = [];
 
   constructor(public id: string, public ws: WebSocket) {}
 
@@ -44,11 +46,10 @@ export class WebSocketPlayer implements Player {
   async init({ playsFirst }: { playsFirst: boolean }) {
     await this.notify({
       type: "init",
-      deck: this.deck.cards,
+      hand: this.hand,
+      deckLength: this.deck.length(),
       playsFirst,
     });
-
-    console.log("Init message sent !");
   }
 
   async notify(message: Message) {
@@ -154,6 +155,7 @@ export class WebSocketPlayer implements Player {
 export class CPU implements Player {
   public deck: Deck;
   public onBoard: Card[] = [];
+  public hand: Card[] = [];
 
   init() {
     return Promise.resolve();
@@ -162,7 +164,7 @@ export class CPU implements Player {
   public play() {
     return new Promise<number>((resolve) => {
       setTimeout(() => {
-        resolve(Math.floor(Math.random() * this.deck.length()));
+        resolve(Math.floor(Math.random() * this.hand.length));
       }, Math.random() * 1000 + 2000);
     });
   }
@@ -210,7 +212,9 @@ export class Game {
   async init() {
     this.cards = this.loadCards();
     this.p1.deck = this.generateDeck();
+    this.p1.hand = this.generateHand(this.p1.deck);
     this.p2.deck = this.generateDeck();
+    this.p2.hand = this.generateHand(this.p2.deck);
 
     await Promise.all([
       this.p1.init({ playsFirst: this.isP1Turn }),
@@ -220,7 +224,12 @@ export class Game {
 
   generateDeck(): Deck {
     const shuffledCards = this.cards.sort(() => 0.5 - Math.random());
-    return new Deck(shuffledCards.slice(0, 5));
+    return new Deck(shuffledCards.slice(0, 15));
+  }
+
+  generateHand(deck: Deck): Card[] {
+    const shuffledCards = deck.cards.sort(() => 0.5 - Math.random());
+    return shuffledCards.slice(0, 5);
   }
 
   async handlePlay(index: number) {
@@ -234,14 +243,14 @@ export class Game {
       ? [this.p1, this.p2]
       : [this.p2, this.p1];
 
-    const card = currentPlayer.deck.pick(index);
+    const card = currentPlayer.hand.splice(index, 1)[0];
     currentPlayer.onBoard.push(card);
 
     console.log("Played: " + card.toString());
 
     currentPlayer.notify({
-      type: "deckUpdate",
-      deck: currentPlayer.deck.cards,
+      type: "handUpdate",
+      hand: currentPlayer.hand,
     });
 
     opponent.notify({

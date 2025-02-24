@@ -19,6 +19,7 @@ type CardProps = (
   className?: string;
   initial?: CardAnimation;
   animate?: CardAnimation;
+  style?: React.CSSProperties;
 };
 
 export function Card(props: CardProps) {
@@ -79,6 +80,7 @@ export function Card(props: CardProps) {
           damping: 30,
         },
       }}
+      style={props.style}
     >
       <div className="border border-neutral-500 p-3 w-(--card-width) h-(--card-height) grid place-items-center rounded-sm">
         {props.isHidden ? (

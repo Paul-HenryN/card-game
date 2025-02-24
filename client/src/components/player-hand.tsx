@@ -4,11 +4,11 @@ import { LayoutGroup } from "motion/react";
 import { useCallback, useEffect, useState } from "react";
 import { Message } from "../../../shared/entities/websocket";
 
-export function PlayerDeck() {
+export function PlayerHand() {
   const {
     ws,
-    playerDeck,
-    setPlayerDeck,
+    playerHand,
+    setPlayerHand,
     board,
     setBoard,
     sendMessage,
@@ -22,7 +22,7 @@ export function PlayerDeck() {
     const message = JSON.parse(event.data) as Message;
 
     if (message.type === "init") {
-      setPlayerDeck(message.deck);
+      setPlayerHand(message.hand);
       setPlayerTurn(message.playsFirst);
     }
   };
@@ -33,13 +33,14 @@ export function PlayerDeck() {
     (event: MessageEvent) => {
       const message = JSON.parse(event.data) as Message;
 
-      if (message.type === "deckUpdate") {
-        if (JSON.stringify(playerDeck) !== JSON.stringify(message.deck)) {
-          setPlayerDeck(message.deck);
+      if (message.type === "handUpdate") {
+        console.log("Hand update: " + JSON.stringify(message.hand));
+        if (JSON.stringify(playerHand) !== JSON.stringify(message.hand)) {
+          setPlayerHand(message.hand);
         }
       }
     },
-    [playerDeck, setPlayerDeck]
+    [playerHand, setPlayerHand]
   );
 
   useEffect(() => {
@@ -56,7 +57,7 @@ export function PlayerDeck() {
     <>
       <LayoutGroup>
         <div className="flex justify-center gap-(--deck-gap)">
-          {playerDeck.map((card, i) => (
+          {playerHand.map((card, i) => (
             <Card
               key={i}
               isHidden={false}
@@ -70,7 +71,7 @@ export function PlayerDeck() {
               }}
               onAnimationComplete={(def) => {
                 if (def === "play") {
-                  setPlayerDeck(playerDeck.filter((_, j) => j !== i));
+                  setPlayerHand(playerHand.filter((_, j) => j !== i));
                   setBoard({ ...board, player: [...board.player, card] });
                   sendMessage({ type: "pick", index: i });
                   setPlayedCardIdx(null);

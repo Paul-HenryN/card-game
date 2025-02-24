@@ -1,11 +1,11 @@
 import { Card } from "./game";
 
 export type Message =
-  | { type: "init"; deck: Card[]; playsFirst: boolean }
+  | { type: "init"; hand: Card[]; playsFirst: boolean; deckLength: number }
   | { type: "info"; message: string }
   | { type: "play" }
   | { type: "pick"; index: number }
-  | { type: "deckUpdate"; deck: Card[] }
+  | { type: "handUpdate"; hand: Card[] }
   | { type: "boardUpdate"; board: { player: Card[]; opponent: Card[] } }
   | { type: "opponentPlay"; playedCardIdx: number; playedCard: Card }
   | {
@@ -26,8 +26,9 @@ export type Message =
   | { type: "gameOver"; win: boolean }
   | {
       type: "reconnect";
-      deck: Card[];
-      opponentCardCount: number;
+      hand: Card[];
+      deckLength: number;
+      opponentHandLength: number;
       board: { player: Card[]; opponent: Card[] };
       isPlayerTurn: boolean;
     };

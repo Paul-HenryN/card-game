@@ -1,21 +1,31 @@
 import { Board } from "./board";
-import { PlayerDeck } from "./player-deck";
-import { OpponentDeck } from "./opponent-deck";
+import { PlayerHand } from "./player-hand";
+import { OpponentHand } from "./opponent-hand";
 import { useGameContext } from "../game-context";
 import { Message } from "../../../shared/entities/websocket";
 import { useEffect } from "react";
+import { Deck } from "./deck";
 
 export function Game() {
-  const { ws, setPlayerTurn, setPlayerDeck, setOpponentDeckLength, setBoard } =
-    useGameContext();
+  const {
+    ws,
+    setPlayerTurn,
+    setPlayerHand,
+    setPlayerDeckLength,
+    setOpponentDeckLength,
+    opponentDeckLength,
+    setBoard,
+    playerDeckLength,
+  } = useGameContext();
 
   const handleReconnectMessage = (event: MessageEvent) => {
     const message = JSON.parse(event.data) as Message;
 
     if (message.type === "reconnect") {
       console.log(message);
-      setPlayerDeck(message.deck);
-      setOpponentDeckLength(message.opponentCardCount);
+      setPlayerHand(message.hand);
+      setPlayerDeckLength(message.deckLength);
+      setOpponentDeckLength(message.opponentHandLength);
       setBoard(message.board);
       setPlayerTurn(message.isPlayerTurn);
     }
@@ -32,11 +42,23 @@ export function Game() {
   return (
     <div className="relative h-[calc(4_*_var(--card-height))]">
       <div className="transform-[perspective(40cm)_rotateX(45deg)]">
-        <OpponentDeck />
+        <div className="flex justify-between w-[calc(8_*_var(--card-width))]">
+          <Deck length={opponentDeckLength} />
+          <div className="mx-auto">
+            <OpponentHand />
+          </div>
+        </div>
+
         <Board />
       </div>
 
-      <PlayerDeck />
+      <div className="flex justify-between w-[calc(8_*_var(--card-width))]">
+        <div className="mx-auto">
+          <PlayerHand />
+        </div>
+
+        <Deck length={playerDeckLength} />
+      </div>
     </div>
   );
 }

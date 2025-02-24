@@ -4,11 +4,11 @@ import { LayoutGroup } from "motion/react";
 import { useEffect } from "react";
 import { Message } from "../../../shared/entities/websocket";
 
-export function OpponentDeck() {
+export function OpponentHand() {
   const {
     ws,
-    opponentDeckLength,
-    setOpponentDeckLength,
+    opponentHandLength,
+    setOpponentHandLength,
     setBoard,
     setPlayerTurn,
   } = useGameContext();
@@ -17,7 +17,7 @@ export function OpponentDeck() {
     const message = JSON.parse(event.data) as Message;
 
     if (message.type === "opponentPlay") {
-      setOpponentDeckLength(opponentDeckLength - 1);
+      setOpponentHandLength(opponentHandLength - 1);
       setBoard((prev) => ({
         ...prev,
         opponent: [...prev.opponent, message.playedCard],
@@ -34,7 +34,7 @@ export function OpponentDeck() {
   return (
     <LayoutGroup>
       <div className="flex justify-center gap-(--deck-gap)">
-        {Array(opponentDeckLength)
+        {Array(opponentHandLength)
           .fill(null)
           .map((_, i) => (
             <Card key={i} disabled isHidden />
